@@ -259,7 +259,7 @@
       lessonStatus.textContent = `Selected ${text}.`;
 
       if (!('speechSynthesis' in window)) {
-        lessonStatus.textContent = 'Speech is not supported on this device.';
+        lessonStatus.textContent = `Selected ${text}. Speech is not supported on this device.`;
         return;
       }
 
