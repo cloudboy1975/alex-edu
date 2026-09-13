@@ -132,6 +132,9 @@
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
       align-content: start;
+      list-style: none;
+      margin: 0;
+      padding: 0;
     }
 
     .tile {
@@ -187,7 +190,7 @@
         </div>
         <div class="back-spacer" aria-hidden="true"></div>
       </header>
-      <div class="grid" id="lesson-grid"></div>
+      <ul class="grid" id="lesson-grid"></ul>
       <p class="status" id="lesson-status" aria-live="polite">Tap any tile to start.</p>
     </section>
   </main>
@@ -211,7 +214,7 @@
     const statusMessage = document.getElementById('status-message');
     const menuTitle = document.getElementById('menu-title');
     const backButton = document.getElementById('back-button');
-    let activeSpeechText = '';
+    let activeUtterance = null;
 
     function showScreen(screen) {
       menuScreen.classList.toggle('active', screen === 'menu');
@@ -230,14 +233,18 @@
         return;
       }
 
+      if (activeUtterance) {
+        activeUtterance.onend = null;
+      }
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      activeSpeechText = text;
+      activeUtterance = utterance;
       utterance.rate = 0.85;
       utterance.pitch = 1.05;
       utterance.onend = () => {
-        if (activeSpeechText === text) {
+        if (activeUtterance === utterance) {
           lessonStatus.textContent = `You heard ${text}.`;
+          activeUtterance = null;
         }
       };
       lessonStatus.textContent = `Speaking ${text}...`;
@@ -245,13 +252,16 @@
     }
 
     function createTile(value) {
+      const item = document.createElement('li');
+      item.setAttribute('role', 'listitem');
       const tile = document.createElement('button');
       tile.type = 'button';
       tile.className = 'tile';
       tile.textContent = value;
       tile.setAttribute('aria-label', `Say ${value}`);
       tile.addEventListener('click', () => speak(value));
-      return tile;
+      item.append(tile);
+      return item;
     }
 
     function openLesson(mode) {
@@ -276,9 +286,12 @@
 
     backButton.addEventListener('click', () => {
       if ('speechSynthesis' in window) {
+        if (activeUtterance) {
+          activeUtterance.onend = null;
+        }
         window.speechSynthesis.cancel();
       }
-      activeSpeechText = '';
+      activeUtterance = null;
       statusMessage.textContent = 'Pick another game.';
       showScreen('menu');
     });
