@@ -167,11 +167,11 @@
       <p>Choose a learning game and tap to hear each sound.</p>
       <div class="menu-actions">
         <button class="menu-button" type="button" data-mode="letters" aria-label="Open ABCs">
-          <strong>ABC's</strong>
+          <strong>ABCs</strong>
           <span>Touch letters and hear them spoken</span>
         </button>
         <button class="menu-button" type="button" data-mode="numbers" aria-label="Open 123s">
-          <strong>123's</strong>
+          <strong>123s</strong>
           <span>Touch numbers and hear them spoken</span>
         </button>
       </div>
@@ -182,7 +182,7 @@
       <header class="lesson-header">
         <button class="back-button" type="button" id="back-button" aria-label="Back to menu">Back</button>
         <div class="lesson-title">
-          <h2 id="lesson-title" tabindex="-1">ABC's</h2>
+          <h2 id="lesson-title" tabindex="-1">ABCs</h2>
           <p id="lesson-instruction">Tap a tile to hear it.</p>
         </div>
         <div class="back-spacer" aria-hidden="true"></div>
@@ -199,8 +199,8 @@
     };
 
     const labels = {
-      letters: "ABC's",
-      numbers: "123's"
+      letters: 'ABCs',
+      numbers: '123s'
     };
 
     const menuScreen = document.getElementById('menu-screen');
@@ -211,6 +211,7 @@
     const statusMessage = document.getElementById('status-message');
     const menuTitle = document.getElementById('menu-title');
     const backButton = document.getElementById('back-button');
+    let activeSpeechText = '';
 
     function showScreen(screen) {
       menuScreen.classList.toggle('active', screen === 'menu');
@@ -231,10 +232,13 @@
 
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
+      activeSpeechText = text;
       utterance.rate = 0.85;
       utterance.pitch = 1.05;
       utterance.onend = () => {
-        lessonStatus.textContent = `You heard ${text}.`;
+        if (activeSpeechText === text) {
+          lessonStatus.textContent = `You heard ${text}.`;
+        }
       };
       lessonStatus.textContent = `Speaking ${text}...`;
       window.speechSynthesis.speak(utterance);
@@ -251,6 +255,12 @@
     }
 
     function openLesson(mode) {
+      if (!(mode in content) || !(mode in labels)) {
+        statusMessage.textContent = 'That lesson is not available.';
+        showScreen('menu');
+        return;
+      }
+
       lessonTitle.textContent = labels[mode];
       lessonGrid.replaceChildren(...content[mode].map(createTile));
       lessonStatus.textContent = `Tap a ${mode === 'letters' ? 'letter' : 'number'} to hear it.`;
@@ -268,6 +278,7 @@
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel();
       }
+      activeSpeechText = '';
       statusMessage.textContent = 'Pick another game.';
       showScreen('menu');
     });
