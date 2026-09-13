@@ -46,6 +46,10 @@
       flex-direction: column;
     }
 
+    [hidden] {
+      display: none !important;
+    }
+
     .menu {
       justify-content: center;
       gap: 20px;
@@ -199,7 +203,7 @@
   <script>
     const content = {
       letters: Array.from({ length: 26 }, (_, index) => String.fromCharCode(65 + index)),
-      numbers: Array.from({ length: 10 }, (_, index) => String(index + 1))
+      numbers: Array.from({ length: 9 }, (_, index) => String(index + 1))
     };
 
     const labels = {
@@ -275,7 +279,7 @@
       };
       utterance.onerror = () => {
         if (activeUtterance === utterance) {
-          lessonStatus.textContent = `Unable to speak ${text}. Check speech support and try another tile.`;
+          lessonStatus.textContent = `Unable to play ${text}. Please try again.`;
           activeUtterance = null;
         }
       };
