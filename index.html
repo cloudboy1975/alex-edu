@@ -102,9 +102,9 @@
     }
 
     .lesson-header {
-      display: flex;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
       align-items: center;
-      justify-content: space-between;
       gap: 12px;
       margin-bottom: 20px;
     }
@@ -114,10 +114,11 @@
       min-height: 50px;
       padding: 0 16px;
       font-weight: 700;
+      justify-self: start;
     }
 
     .lesson-title {
-      flex: 1;
+      grid-column: 2;
       text-align: center;
     }
 
@@ -127,7 +128,7 @@
     }
 
     .back-spacer {
-      width: 76px;
+      min-width: 0;
     }
 
     .grid {
@@ -280,7 +281,7 @@
       };
       utterance.onerror = (event) => {
         if (activeUtterance === utterance && speakRequestId === requestId) {
-          lessonStatus.textContent = event.error === 'interrupted' || event.error === 'canceled'
+          lessonStatus.textContent = event.error === 'interrupted' || event.error === 'cancelled'
             ? `Stopped ${text}. Select it again to replay.`
             : `Unable to play ${text}. Please try again.`;
           activeUtterance = null;
@@ -332,6 +333,8 @@
       statusMessage.textContent = 'Pick another game.';
       showScreen('menu');
     });
+
+    window.addEventListener('pagehide', stopSpeech);
   </script>
 </body>
 </html>
