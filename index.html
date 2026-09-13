@@ -181,7 +181,7 @@
       <p class="status" id="status-message">Ready to learn.</p>
     </section>
 
-    <section class="screen" id="lesson-screen" aria-label="Learning screen">
+    <section class="screen" id="lesson-screen" aria-label="Learning screen" hidden>
       <header class="lesson-header">
         <button class="back-button" type="button" id="back-button" aria-label="Back to menu">Back</button>
         <div class="lesson-title">
@@ -221,6 +221,8 @@
     function showScreen(screen) {
       menuScreen.classList.toggle('active', screen === 'menu');
       lessonScreen.classList.toggle('active', screen === 'lesson');
+      menuScreen.hidden = screen !== 'menu';
+      lessonScreen.hidden = screen !== 'lesson';
       if (screen === 'menu') {
         menuTitle.focus();
         return;
@@ -254,7 +256,7 @@
       };
       utterance.onerror = () => {
         if (activeUtterance === utterance) {
-          lessonStatus.textContent = `Unable to speak ${text}.`;
+          lessonStatus.textContent = `Unable to speak ${text}. Check speech support and try another tile.`;
           activeUtterance = null;
         }
       };
@@ -281,6 +283,7 @@
         return;
       }
 
+      statusMessage.textContent = `Opening ${labels[mode]}.`;
       lessonTitle.textContent = labels[mode];
       lessonGrid.setAttribute('aria-label', `${labels[mode]} lesson tiles`);
       lessonGrid.replaceChildren(...content[mode].map(createTile));
@@ -292,12 +295,6 @@
     document.querySelectorAll('[data-mode]').forEach((button) => {
       button.addEventListener('click', () => {
         const { mode } = button.dataset;
-        if (!(mode in content) || !(mode in labels)) {
-          statusMessage.textContent = 'That lesson is not available.';
-          return;
-        }
-
-        statusMessage.textContent = `Opening ${labels[mode]}.`;
         openLesson(mode);
       });
     });
