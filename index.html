@@ -238,6 +238,7 @@
 
       if (activeUtterance) {
         activeUtterance.onend = null;
+        activeUtterance.onerror = null;
       }
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
@@ -305,6 +306,7 @@
       if ('speechSynthesis' in window) {
         if (activeUtterance) {
           activeUtterance.onend = null;
+          activeUtterance.onerror = null;
         }
         window.speechSynthesis.cancel();
       }
