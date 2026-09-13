@@ -190,7 +190,7 @@
         </div>
         <div class="back-spacer" aria-hidden="true"></div>
       </header>
-      <ul class="grid" id="lesson-grid"></ul>
+      <ul class="grid" id="lesson-grid" aria-labelledby="lesson-title"></ul>
       <p class="status" id="lesson-status" aria-live="polite">Tap any tile to start.</p>
     </section>
   </main>
@@ -244,6 +244,12 @@
       utterance.onend = () => {
         if (activeUtterance === utterance) {
           lessonStatus.textContent = `You heard ${text}.`;
+          activeUtterance = null;
+        }
+      };
+      utterance.onerror = () => {
+        if (activeUtterance === utterance) {
+          lessonStatus.textContent = `Unable to speak ${text}.`;
           activeUtterance = null;
         }
       };
