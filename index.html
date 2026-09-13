@@ -222,6 +222,7 @@
     const backButton = document.getElementById('back-button');
     const firstMenuButton = document.querySelector('[data-mode]');
     let activeUtterance = null;
+    let speakRequestId = 0;
 
     function showScreen(screen) {
       menuScreen.classList.toggle('active', screen === 'menu');
@@ -229,7 +230,7 @@
       menuScreen.hidden = screen !== 'menu';
       lessonScreen.hidden = screen !== 'lesson';
       if (screen === 'menu') {
-        firstMenuButton.focus();
+        firstMenuButton?.focus();
         return;
       }
 
@@ -237,6 +238,7 @@
     }
 
     function stopSpeech() {
+      speakRequestId += 1;
       if (!('speechSynthesis' in window)) {
         activeUtterance = null;
         return;
@@ -262,22 +264,24 @@
       }
 
       stopSpeech();
+      const requestId = ++speakRequestId;
       const utterance = new SpeechSynthesisUtterance(text);
       activeUtterance = utterance;
       utterance.onstart = () => {
-        if (activeUtterance === utterance) {
+        if (activeUtterance === utterance && speakRequestId === requestId) {
           lessonStatus.textContent = `Speaking ${text}...`;
         }
       };
       utterance.onend = () => {
-        if (activeUtterance === utterance) {
+        if (activeUtterance === utterance && speakRequestId === requestId) {
           lessonStatus.textContent = `You heard ${text}.`;
           activeUtterance = null;
         }
       };
-      utterance.onerror = () => {
-        if (activeUtterance === utterance) {
-          lessonStatus.textContent = `Unable to play ${text}. Please try again.`;
+      utterance.onerror = (event) => {
+        if (activeUtterance === utterance && speakRequestId === requestId) {
+          const reason = event.error ? ` (${event.error})` : '';
+          lessonStatus.textContent = `Unable to play ${text}${reason}. Please try again.`;
           activeUtterance = null;
         }
       };
