@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Alex Edu</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg-start: #7c3aed;
+      --bg-end: #2563eb;
+      --card: rgba(255, 255, 255, 0.18);
+      --card-border: rgba(255, 255, 255, 0.3);
+      --text: #ffffff;
+      --shadow: 0 20px 45px rgba(15, 23, 42, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(180deg, var(--bg-start), var(--bg-end));
+      color: var(--text);
+    }
+
+    button {
+      font: inherit;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .screen {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: none;
+      padding: 20px;
+    }
+
+    .screen.active {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .menu {
+      justify-content: center;
+      gap: 20px;
+      text-align: center;
+    }
+
+    .menu h1,
+    .lesson-header h2 {
+      margin: 0;
+    }
+
+    .menu p,
+    .status {
+      margin: 0;
+      opacity: 0.92;
+    }
+
+    .menu-actions {
+      display: grid;
+      gap: 16px;
+      width: min(100%, 420px);
+      margin: 0 auto;
+    }
+
+    .menu-button,
+    .tile,
+    .back-button {
+      border-radius: 24px;
+      color: var(--text);
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow);
+    }
+
+    .menu-button {
+      min-height: 110px;
+      padding: 18px;
+      display: grid;
+      gap: 6px;
+      place-items: center;
+    }
+
+    .menu-button strong {
+      font-size: clamp(2rem, 8vw, 3rem);
+      line-height: 1;
+    }
+
+    .menu-button span {
+      font-size: 1.05rem;
+    }
+
+    .lesson-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .back-button {
+      min-width: 76px;
+      min-height: 50px;
+      padding: 0 16px;
+      font-weight: 700;
+    }
+
+    .lesson-title {
+      flex: 1;
+      text-align: center;
+    }
+
+    .lesson-title p {
+      margin: 6px 0 0;
+      opacity: 0.92;
+    }
+
+    .back-spacer {
+      width: 76px;
+    }
+
+    .grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      align-content: start;
+    }
+
+    .tile {
+      min-height: 92px;
+      padding: 0;
+      display: grid;
+      place-items: center;
+      font-size: clamp(2rem, 9vw, 3.4rem);
+      font-weight: 700;
+    }
+
+    .tile:active,
+    .menu-button:active,
+    .back-button:active {
+      transform: scale(0.98);
+    }
+
+    @media (min-width: 700px) {
+      .screen {
+        padding: 24px max(24px, calc((100vw - 640px) / 2));
+      }
+
+      .grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="screen menu active" id="menu-screen" aria-label="Main menu">
+      <h1>Alex Edu</h1>
+      <p>Choose a learning game and tap to hear each sound.</p>
+      <div class="menu-actions">
+        <button class="menu-button" type="button" data-mode="letters" aria-label="Open ABCs">
+          <strong>ABC's</strong>
+          <span>Touch letters and hear them spoken</span>
+        </button>
+        <button class="menu-button" type="button" data-mode="numbers" aria-label="Open 123s">
+          <strong>123's</strong>
+          <span>Touch numbers and hear them spoken</span>
+        </button>
+      </div>
+      <p class="status" id="status-message">Ready to learn.</p>
+    </section>
+
+    <section class="screen" id="lesson-screen" aria-label="Learning screen">
+      <header class="lesson-header">
+        <button class="back-button" type="button" id="back-button" aria-label="Back to menu">Back</button>
+        <div class="lesson-title">
+          <h2 id="lesson-title">ABC's</h2>
+          <p id="lesson-instruction">Tap a tile to hear it.</p>
+        </div>
+        <div class="back-spacer" aria-hidden="true"></div>
+      </header>
+      <div class="grid" id="lesson-grid" aria-live="polite"></div>
+      <p class="status" id="lesson-status">Tap any tile to start.</p>
+    </section>
+  </main>
+
+  <script>
+    const content = {
+      letters: Array.from({ length: 26 }, (_, index) => String.fromCharCode(65 + index)),
+      numbers: Array.from({ length: 10 }, (_, index) => String(index + 1))
+    };
+
+    const labels = {
+      letters: "ABC's",
+      numbers: "123's"
+    };
+
+    const menuScreen = document.getElementById('menu-screen');
+    const lessonScreen = document.getElementById('lesson-screen');
+    const lessonGrid = document.getElementById('lesson-grid');
+    const lessonTitle = document.getElementById('lesson-title');
+    const lessonStatus = document.getElementById('lesson-status');
+    const statusMessage = document.getElementById('status-message');
+    let currentUtterance;
+
+    function showScreen(screen) {
+      menuScreen.classList.toggle('active', screen === 'menu');
+      lessonScreen.classList.toggle('active', screen === 'lesson');
+    }
+
+    function speak(text) {
+      if (!('speechSynthesis' in window)) {
+        lessonStatus.textContent = 'Speech is not supported on this device.';
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      currentUtterance = new SpeechSynthesisUtterance(text);
+      currentUtterance.rate = 0.85;
+      currentUtterance.pitch = 1.05;
+      currentUtterance.onend = () => {
+        lessonStatus.textContent = `You heard ${text}.`;
+      };
+      window.speechSynthesis.speak(currentUtterance);
+      lessonStatus.textContent = `Speaking ${text}...`;
+    }
+
+    function createTile(value) {
+      const tile = document.createElement('button');
+      tile.type = 'button';
+      tile.className = 'tile';
+      tile.textContent = value;
+      tile.setAttribute('aria-label', `Say ${value}`);
+      tile.addEventListener('click', () => speak(value));
+      return tile;
+    }
+
+    function openLesson(mode) {
+      lessonTitle.textContent = labels[mode];
+      lessonGrid.replaceChildren(...content[mode].map(createTile));
+      lessonStatus.textContent = `Tap a ${mode === 'letters' ? 'letter' : 'number'} to hear it.`;
+      showScreen('lesson');
+    }
+
+    document.querySelectorAll('[data-mode]').forEach((button) => {
+      button.addEventListener('click', () => {
+        statusMessage.textContent = `Opening ${labels[button.dataset.mode]}.`;
+        openLesson(button.dataset.mode);
+      });
+    });
+
+    document.getElementById('back-button').addEventListener('click', () => {
+      window.speechSynthesis?.cancel();
+      statusMessage.textContent = 'Pick another game.';
+      showScreen('menu');
+    });
+  </script>
+</body>
+</html>
