@@ -191,7 +191,7 @@
         </div>
         <div class="back-spacer" aria-hidden="true"></div>
       </header>
-      <ul class="grid" id="lesson-grid" aria-label="Lesson tiles"></ul>
+      <ul class="grid" id="lesson-grid" role="radiogroup" aria-label="Lesson tiles"></ul>
       <p class="status" id="lesson-status" aria-live="polite">Tap any tile to start.</p>
     </section>
   </main>
@@ -217,7 +217,7 @@
     const menuTitle = document.getElementById('menu-title');
     const backButton = document.getElementById('back-button');
     let activeUtterance = null;
-    let activeItem = null;
+    let activeTile = null;
 
     function showScreen(screen) {
       menuScreen.classList.toggle('active', screen === 'menu');
@@ -232,12 +232,28 @@
       backButton.focus();
     }
 
-    function speak(text, item) {
-      if (activeItem) {
-        activeItem.removeAttribute('aria-current');
+    function stopSpeech() {
+      if (!('speechSynthesis' in window)) {
+        activeUtterance = null;
+        return;
       }
-      activeItem = item;
-      activeItem.setAttribute('aria-current', 'true');
+
+      if (activeUtterance) {
+        activeUtterance.onstart = null;
+        activeUtterance.onend = null;
+        activeUtterance.onerror = null;
+      }
+
+      window.speechSynthesis.cancel();
+      activeUtterance = null;
+    }
+
+    function speak(text, tile) {
+      if (activeTile) {
+        activeTile.setAttribute('aria-checked', 'false');
+      }
+      activeTile = tile;
+      activeTile.setAttribute('aria-checked', 'true');
       currentSelection.textContent = `Current selection: ${text}`;
       lessonStatus.textContent = `Selected ${text}.`;
 
@@ -246,11 +262,7 @@
         return;
       }
 
-      if (activeUtterance) {
-        activeUtterance.onend = null;
-        activeUtterance.onerror = null;
-      }
-      window.speechSynthesis.cancel();
+      stopSpeech();
       const utterance = new SpeechSynthesisUtterance(text);
       activeUtterance = utterance;
       utterance.rate = 0.85;
@@ -280,9 +292,10 @@
       const tile = document.createElement('button');
       tile.type = 'button';
       tile.className = 'tile';
+      tile.setAttribute('role', 'radio');
+      tile.setAttribute('aria-checked', 'false');
       tile.textContent = value;
-      tile.setAttribute('aria-label', `Say ${value}`);
-      tile.addEventListener('click', () => speak(value, item));
+      tile.addEventListener('click', () => speak(value, tile));
       item.append(tile);
       return item;
     }
@@ -294,11 +307,12 @@
         return;
       }
 
+      stopSpeech();
       statusMessage.textContent = `Opening ${labels[mode]}.`;
       lessonTitle.textContent = labels[mode];
       lessonGrid.setAttribute('aria-label', `${labels[mode]} lesson tiles`);
       lessonGrid.replaceChildren(...content[mode].map(createTile));
-      activeItem = null;
+      activeTile = null;
       currentSelection.textContent = 'Current selection: none';
       lessonStatus.textContent = `Tap a ${mode === 'letters' ? 'letter' : 'number'} to hear it.`;
       showScreen('lesson');
@@ -312,15 +326,8 @@
     });
 
     backButton.addEventListener('click', () => {
-      if ('speechSynthesis' in window) {
-        if (activeUtterance) {
-          activeUtterance.onend = null;
-          activeUtterance.onerror = null;
-        }
-        window.speechSynthesis.cancel();
-      }
-      activeUtterance = null;
-      activeItem = null;
+      stopSpeech();
+      activeTile = null;
       currentSelection.textContent = 'Current selection: none';
       lessonStatus.textContent = 'Tap any tile to start.';
       statusMessage.textContent = 'Pick another game.';
