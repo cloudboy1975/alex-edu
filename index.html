@@ -280,20 +280,22 @@
       };
       utterance.onerror = (event) => {
         if (activeUtterance === utterance && speakRequestId === requestId) {
-          const reason = event.error ? ` (${event.error})` : '';
-          lessonStatus.textContent = `Unable to play ${text}${reason}. Please try again.`;
+          lessonStatus.textContent = event.error === 'interrupted' || event.error === 'canceled'
+            ? `Stopped ${text}. Select it again to replay.`
+            : `Unable to play ${text}. Please try again.`;
           activeUtterance = null;
         }
       };
       window.speechSynthesis.speak(utterance);
     }
 
-    function createTile(value) {
+    function createTile(value, mode) {
       const item = document.createElement('li');
       const tile = document.createElement('button');
       tile.type = 'button';
       tile.className = 'tile';
       tile.textContent = value;
+      tile.setAttribute('aria-label', `${mode === 'letters' ? 'Letter' : 'Number'} ${value}`);
       tile.addEventListener('click', () => speak(value));
       item.append(tile);
       return item;
@@ -310,7 +312,7 @@
       statusMessage.textContent = `Opening ${labels[mode]}.`;
       lessonTitle.textContent = labels[mode];
       lessonGrid.setAttribute('aria-label', `${labels[mode]} lesson tiles`);
-      lessonGrid.replaceChildren(...content[mode].map(createTile));
+      lessonGrid.replaceChildren(...content[mode].map((value) => createTile(value, mode)));
       currentSelection.textContent = 'Current selection: none';
       lessonStatus.textContent = `Select a ${mode === 'letters' ? 'letter' : 'number'} to hear it.`;
       showScreen('lesson');
