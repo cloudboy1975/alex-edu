@@ -167,15 +167,15 @@
   <main>
     <section class="screen menu active" id="menu-screen" aria-label="Main menu">
       <h1 id="menu-title" tabindex="-1">Alex Edu</h1>
-      <p>Choose a learning game and tap to hear each sound.</p>
+      <p>Choose a learning game and select each sound.</p>
       <div class="menu-actions">
         <button class="menu-button" type="button" data-mode="letters">
           <strong>ABCs</strong>
-          <span>Touch letters and hear them spoken</span>
+          <span>Select letters and hear them spoken</span>
         </button>
         <button class="menu-button" type="button" data-mode="numbers">
           <strong>123s</strong>
-          <span>Touch numbers and hear them spoken</span>
+          <span>Select numbers and hear them spoken</span>
         </button>
       </div>
       <p class="status" id="status-message">Ready to learn.</p>
@@ -228,7 +228,7 @@
         return;
       }
 
-      backButton.focus();
+      lessonTitle.focus();
     }
 
     function stopSpeech() {
@@ -305,7 +305,7 @@
       lessonGrid.setAttribute('aria-label', `${labels[mode]} lesson tiles`);
       lessonGrid.replaceChildren(...content[mode].map(createTile));
       currentSelection.textContent = 'Current selection: none';
-      lessonStatus.textContent = `Tap a ${mode === 'letters' ? 'letter' : 'number'} to hear it.`;
+      lessonStatus.textContent = `Select a ${mode === 'letters' ? 'letter' : 'number'} to hear it.`;
       showScreen('lesson');
     }
 
