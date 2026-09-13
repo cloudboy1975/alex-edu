@@ -259,7 +259,6 @@
 
     function createTile(value) {
       const item = document.createElement('li');
-      item.setAttribute('role', 'listitem');
       const tile = document.createElement('button');
       tile.type = 'button';
       tile.className = 'tile';
@@ -286,8 +285,14 @@
 
     document.querySelectorAll('[data-mode]').forEach((button) => {
       button.addEventListener('click', () => {
-        statusMessage.textContent = `Opening ${labels[button.dataset.mode]}.`;
-        openLesson(button.dataset.mode);
+        const { mode } = button.dataset;
+        if (!(mode in content) || !(mode in labels)) {
+          statusMessage.textContent = 'That lesson is not available.';
+          return;
+        }
+
+        statusMessage.textContent = `Opening ${labels[mode]}.`;
+        openLesson(mode);
       });
     });
 
