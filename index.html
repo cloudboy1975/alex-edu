@@ -166,7 +166,7 @@
 <body>
   <main>
     <section class="screen menu active" id="menu-screen" aria-label="Main menu">
-      <h1 id="menu-title" tabindex="-1">Alex Edu</h1>
+      <h1 id="menu-title">Alex Edu</h1>
       <p>Choose a learning game and select each sound.</p>
       <div class="menu-actions">
         <button class="menu-button" type="button" data-mode="letters">
@@ -185,9 +185,9 @@
       <header class="lesson-header">
         <button class="back-button" type="button" id="back-button" aria-label="Back to menu">Back</button>
         <div class="lesson-title">
-          <h2 id="lesson-title" tabindex="-1">ABCs</h2>
-          <p id="lesson-instruction">Tap a tile to hear it.</p>
-          <p id="current-selection">Current selection: none</p>
+          <h2 id="lesson-title">ABCs</h2>
+          <p id="lesson-instruction">Select a tile to hear it.</p>
+          <p id="current-selection" aria-live="polite">Current selection: none</p>
         </div>
         <div class="back-spacer" aria-hidden="true"></div>
       </header>
@@ -216,6 +216,7 @@
     const statusMessage = document.getElementById('status-message');
     const menuTitle = document.getElementById('menu-title');
     const backButton = document.getElementById('back-button');
+    const firstMenuButton = document.querySelector('[data-mode]');
     let activeUtterance = null;
 
     function showScreen(screen) {
@@ -224,11 +225,11 @@
       menuScreen.hidden = screen !== 'menu';
       lessonScreen.hidden = screen !== 'lesson';
       if (screen === 'menu') {
-        menuTitle.focus();
+        firstMenuButton.focus();
         return;
       }
 
-      lessonTitle.focus();
+      backButton.focus();
     }
 
     function stopSpeech() {
