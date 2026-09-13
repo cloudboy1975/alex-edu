@@ -187,6 +187,7 @@
         <div class="lesson-title">
           <h2 id="lesson-title" tabindex="-1">ABCs</h2>
           <p id="lesson-instruction">Tap a tile to hear it.</p>
+          <p id="current-selection">Current selection: none</p>
         </div>
         <div class="back-spacer" aria-hidden="true"></div>
       </header>
@@ -211,6 +212,7 @@
     const lessonGrid = document.getElementById('lesson-grid');
     const lessonTitle = document.getElementById('lesson-title');
     const lessonStatus = document.getElementById('lesson-status');
+    const currentSelection = document.getElementById('current-selection');
     const statusMessage = document.getElementById('status-message');
     const menuTitle = document.getElementById('menu-title');
     const backButton = document.getElementById('back-button');
@@ -229,6 +231,7 @@
 
     function speak(text) {
       if (!('speechSynthesis' in window)) {
+        currentSelection.textContent = `Current selection: ${text}`;
         lessonStatus.textContent = 'Speech is not supported on this device.';
         return;
       }
@@ -239,6 +242,7 @@
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       activeUtterance = utterance;
+      currentSelection.textContent = `Current selection: ${text}`;
       utterance.rate = 0.85;
       utterance.pitch = 1.05;
       utterance.onend = () => {
@@ -279,6 +283,7 @@
       lessonTitle.textContent = labels[mode];
       lessonGrid.setAttribute('aria-label', `${labels[mode]} lesson tiles`);
       lessonGrid.replaceChildren(...content[mode].map(createTile));
+      currentSelection.textContent = 'Current selection: none';
       lessonStatus.textContent = `Tap a ${mode === 'letters' ? 'letter' : 'number'} to hear it.`;
       showScreen('lesson');
     }
@@ -304,6 +309,7 @@
         window.speechSynthesis.cancel();
       }
       activeUtterance = null;
+      currentSelection.textContent = 'Current selection: none';
       statusMessage.textContent = 'Pick another game.';
       showScreen('menu');
     });
