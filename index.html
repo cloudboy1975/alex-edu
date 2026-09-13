@@ -169,11 +169,11 @@
       <h1 id="menu-title" tabindex="-1">Alex Edu</h1>
       <p>Choose a learning game and tap to hear each sound.</p>
       <div class="menu-actions">
-        <button class="menu-button" type="button" data-mode="letters" aria-label="Open ABCs">
+        <button class="menu-button" type="button" data-mode="letters">
           <strong>ABCs</strong>
           <span>Touch letters and hear them spoken</span>
         </button>
-        <button class="menu-button" type="button" data-mode="numbers" aria-label="Open 123s">
+        <button class="menu-button" type="button" data-mode="numbers">
           <strong>123s</strong>
           <span>Touch numbers and hear them spoken</span>
         </button>
@@ -310,6 +310,7 @@
       }
       activeUtterance = null;
       currentSelection.textContent = 'Current selection: none';
+      lessonStatus.textContent = 'Tap any tile to start.';
       statusMessage.textContent = 'Pick another game.';
       showScreen('menu');
     });
