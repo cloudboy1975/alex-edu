@@ -217,7 +217,7 @@
     const menuTitle = document.getElementById('menu-title');
     const backButton = document.getElementById('back-button');
     let activeUtterance = null;
-    let activeTile = null;
+    let activeItem = null;
 
     function showScreen(screen) {
       menuScreen.classList.toggle('active', screen === 'menu');
@@ -232,15 +232,16 @@
       backButton.focus();
     }
 
-    function speak(text, tile) {
-      if (activeTile) {
-        activeTile.setAttribute('aria-pressed', 'false');
+    function speak(text, item) {
+      if (activeItem) {
+        activeItem.removeAttribute('aria-current');
       }
-      activeTile = tile;
-      activeTile.setAttribute('aria-pressed', 'true');
+      activeItem = item;
+      activeItem.setAttribute('aria-current', 'true');
+      currentSelection.textContent = `Current selection: ${text}`;
+      lessonStatus.textContent = `Selected ${text}.`;
 
       if (!('speechSynthesis' in window)) {
-        currentSelection.textContent = `Current selection: ${text}`;
         lessonStatus.textContent = 'Speech is not supported on this device.';
         return;
       }
@@ -252,9 +253,13 @@
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       activeUtterance = utterance;
-      currentSelection.textContent = `Current selection: ${text}`;
       utterance.rate = 0.85;
       utterance.pitch = 1.05;
+      utterance.onstart = () => {
+        if (activeUtterance === utterance) {
+          lessonStatus.textContent = `Speaking ${text}...`;
+        }
+      };
       utterance.onend = () => {
         if (activeUtterance === utterance) {
           lessonStatus.textContent = `You heard ${text}.`;
@@ -267,7 +272,6 @@
           activeUtterance = null;
         }
       };
-      lessonStatus.textContent = `Speaking ${text}...`;
       window.speechSynthesis.speak(utterance);
     }
 
@@ -278,8 +282,7 @@
       tile.className = 'tile';
       tile.textContent = value;
       tile.setAttribute('aria-label', `Say ${value}`);
-      tile.setAttribute('aria-pressed', 'false');
-      tile.addEventListener('click', () => speak(value, tile));
+      tile.addEventListener('click', () => speak(value, item));
       item.append(tile);
       return item;
     }
@@ -295,7 +298,7 @@
       lessonTitle.textContent = labels[mode];
       lessonGrid.setAttribute('aria-label', `${labels[mode]} lesson tiles`);
       lessonGrid.replaceChildren(...content[mode].map(createTile));
-      activeTile = null;
+      activeItem = null;
       currentSelection.textContent = 'Current selection: none';
       lessonStatus.textContent = `Tap a ${mode === 'letters' ? 'letter' : 'number'} to hear it.`;
       showScreen('lesson');
@@ -317,7 +320,7 @@
         window.speechSynthesis.cancel();
       }
       activeUtterance = null;
-      activeTile = null;
+      activeItem = null;
       currentSelection.textContent = 'Current selection: none';
       lessonStatus.textContent = 'Tap any tile to start.';
       statusMessage.textContent = 'Pick another game.';
